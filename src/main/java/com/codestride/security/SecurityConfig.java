@@ -12,20 +12,46 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    private final JwtAuthFilter jwtAuthFilter;
+    private static final List<String> DEFAULT_ALLOWED_ORIGINS = List.of(
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+            "http://localhost:3000",
+            "http://127.0.0.1:3000"
+    );
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+    private final JwtAuthFilter jwtAuthFilter;
+    private final List<String> allowedOrigins;
+    public SecurityConfig(
+            JwtAuthFilter jwtAuthFilter,
+            @Value("${app.cors.allowed-origins:http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000,http://127.0.0.1:3000}") String allowedOriginsRaw) {
         this.jwtAuthFilter = jwtAuthFilter;
+        this.allowedOrigins = parseAllowedOrigins(allowedOriginsRaw);
+    }
+
+    private List<String> parseAllowedOrigins(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return DEFAULT_ALLOWED_ORIGINS;
+        }
+
+        List<String> origins = Arrays.stream(raw.split(","))
+                .map(String::trim)
+                .filter(origin -> !origin.isEmpty())
+                .collect(Collectors.toList());
+
+        return origins.isEmpty() ? DEFAULT_ALLOWED_ORIGINS : origins;
     }
 
     @Bean
@@ -95,14 +121,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(
-                List.of(
-                        "http://localhost:5173",
-                        "http://127.0.0.1:5173",
-                        "http://localhost:3000",
-                        "http://127.0.0.1:3000"
-                )
-        );
+        configuration.setAllowedOrigins(allowedOrigins);
 
         configuration.setAllowedMethods(
                 List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")

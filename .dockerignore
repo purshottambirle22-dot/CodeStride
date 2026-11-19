@@ -1,0 +1,50 @@
+# ==============================================================================
+# CodeStride Backend - .dockerignore
+# Excludes unnecessary files, build artifacts, frontend assets, and secrets
+# from entering the Docker build context.
+# ==============================================================================
+
+# Version Control
+.git
+.gitignore
+.gitattributes
+
+# IDE & Editor Configurations
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+*.swp
+*.swo
+
+# Local Build Artifacts & Maven Cache
+target/
+build/
+.mvn/wrapper/maven-wrapper.jar
+
+# Frontend Assets (Separate deployment/build context)
+codestride-frontend/
+node_modules/
+**/node_modules/
+
+# Secrets, Environment Files & Keys
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.jks
+*.crt
+
+# Log Files & Directories
+*.log
+logs/
+
+# Temporary, Cache & OS Files
+**/.DS_Store
+Thumbs.db
+tmp/
+temp/
+HELP.md
